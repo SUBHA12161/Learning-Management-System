@@ -94,7 +94,7 @@ const CourseDetails = () => {
             window.removeEventListener("beforeunload", saveProgressOnUnload);
             saveProgressOnUnload();
         };
-    }, [courseId, videoProgress]); // Ensure this effect is run whenever videoProgress or courseId changes
+    }, [courseId, videoProgress]); 
 
     if (!course) {
         return <p>Loading course details...</p>;

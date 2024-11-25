@@ -112,7 +112,7 @@ const updateVideoProgress = async (req, res) => {
         }
 
         const progressIndex = course.progress.findIndex(
-            (entry) => entry.studentId.toString() === studentId.toString() 
+            (entry) => entry.studentId.toString() === studentId.toString()
         );
 
         if (progressIndex >= 0) {
@@ -121,6 +121,12 @@ const updateVideoProgress = async (req, res) => {
         } else {
             course.progress.push({ studentId, videoProgress, currentTime });
         }
+
+        if (videoProgress > 0 && currentTime > 0) {
+            course.views = course.views + 1;
+        }
+
+        course.timeSpent = course.timeSpent + currentTime;
 
         await course.save();
 
@@ -151,12 +157,12 @@ const getAnalytics = async (req, res) => {
                 progress.videoProgress >= 97
             ).length;
 
-            totalViews += course.students.reduce((acc, student) => acc + (student.views || 0), 0);
-            totalTimeSpent += course.students.reduce((acc, student) => acc + (student.timeSpent || 0), 0);
+            totalViews += course.views;
+            totalTimeSpent += course.timeSpent;
         });
 
         const avgCompletionRate = totalStudents ? (completedStudents / totalStudents) * 100 : 0;
-        const avgTimeSpent = totalStudents ? totalTimeSpent / totalStudents : 0;
+        const avgTimeSpent = totalStudents ? ((totalTimeSpent / totalStudents) % 60) : 0;
 
         res.status(200).json({
             totalStudents,

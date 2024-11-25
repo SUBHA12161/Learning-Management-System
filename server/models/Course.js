@@ -17,6 +17,13 @@ const CourseSchema = new mongoose.Schema(
             },
         ],
         videoUrl: { type: String },
+        progress: [
+            {
+                studentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                videoProgress: { type: Number, default: 0 },
+                currentTime: { type: Number, default: 0 },
+            }
+        ],
     },
     { timestamps: true }
 );

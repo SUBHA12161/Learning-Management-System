@@ -23,7 +23,7 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(helmet());
-app.use(limiter);
+// app.use(limiter);
 
 
 app.use((req, res, next) => {

@@ -8,6 +8,7 @@ import CreateCourse from "./pages/CreateCourse";
 import PrivateRoute from "./components/PrivateRoute";
 import NavigationBar from "./components/NavigationBar";
 import CourseDetails from "./pages/CourseDetails";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 const App = () => {
   const { user } = useContext(AuthContext);
@@ -48,9 +49,16 @@ const App = () => {
             </PrivateRoute>
           }
         />
+
         <Route path="/courses/:courseId" element={
           <PrivateRoute>
             <CourseDetails />
+          </PrivateRoute>
+        } />
+
+        <Route path="/analytics" element={
+          <PrivateRoute>
+            <AnalyticsDashboard />
           </PrivateRoute>
         } />
       </Routes>

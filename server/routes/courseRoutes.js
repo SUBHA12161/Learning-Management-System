@@ -1,6 +1,6 @@
 const express = require("express");
 const { protect, authorize } = require("../middlewares/authMiddleware");
-const { createCourse, getCourses, getCourseById } = require("../controllers/courseController");
+const { createCourse, getCourses, getCourseById, getAnalytics, updateVideoProgress } = require("../controllers/courseController");
 
 const multer = require("multer");
 
@@ -20,5 +20,7 @@ const router = express.Router();
 router.post("/", protect, authorize("Instructor"), upload.fields([{ name: "image", maxCount: 1 }, { name: "video", maxCount: 1 }]), createCourse);
 router.get("/", protect, getCourses);
 router.get("/single/:courseId", protect, getCourseById);
+router.get("/analytics", getAnalytics);
+router.patch("/:courseId/progress", protect, updateVideoProgress);
 
 module.exports = router;

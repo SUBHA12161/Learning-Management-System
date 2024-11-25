@@ -87,4 +87,90 @@ const getCourseById = async (req, res) => {
     }
 };
 
-module.exports = { createCourse, getCourses, getCourseById };
+const updateVideoProgress = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { videoProgress, currentTime } = req.body;
+
+        if (!mongoose.isValidObjectId(courseId)) {
+            return res.status(400).json({ message: "Invalid course ID" });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        const studentId = req.user._id;
+
+        if (!course.students.includes(studentId)) {
+            course.students.push(studentId);
+        }
+
+        if (!Array.isArray(course.progress)) {
+            course.progress = [];
+        }
+
+        const progressIndex = course.progress.findIndex(
+            (entry) => entry.studentId.toString() === studentId.toString() 
+        );
+
+        if (progressIndex >= 0) {
+            course.progress[progressIndex].videoProgress = videoProgress;
+            course.progress[progressIndex].currentTime = currentTime;
+        } else {
+            course.progress.push({ studentId, videoProgress, currentTime });
+        }
+
+        await course.save();
+
+        res.status(200).json({ message: "Progress updated successfully" });
+    } catch (error) {
+        console.log("updateVideoProgress error == ", error);
+        res.status(500).json({ message: "Error updating progress", error: error.message });
+    }
+};
+
+const getAnalytics = async (req, res) => {
+    try {
+        const courses = await Course.find().populate('students');
+
+        if (!courses || courses.length === 0) {
+            return res.status(404).json({ message: "No courses found" });
+        }
+
+        let totalStudents = 0;
+        let completedStudents = 0;
+        let totalViews = 0;
+        let totalTimeSpent = 0;
+
+        courses.forEach(course => {
+            totalStudents += course.students.length;
+
+            completedStudents += course.progress.filter((progress) =>
+                progress.videoProgress >= 97
+            ).length;
+
+            totalViews += course.students.reduce((acc, student) => acc + (student.views || 0), 0);
+            totalTimeSpent += course.students.reduce((acc, student) => acc + (student.timeSpent || 0), 0);
+        });
+
+        const avgCompletionRate = totalStudents ? (completedStudents / totalStudents) * 100 : 0;
+        const avgTimeSpent = totalStudents ? totalTimeSpent / totalStudents : 0;
+
+        res.status(200).json({
+            totalStudents,
+            completedStudents,
+            avgCompletionRate,
+            engagementMetrics: {
+                totalViews,
+                avgTimeSpent,
+            },
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Error fetching overall analytics", error: err.message });
+    }
+};
+
+module.exports = { createCourse, getCourses, getCourseById, getAnalytics, updateVideoProgress };

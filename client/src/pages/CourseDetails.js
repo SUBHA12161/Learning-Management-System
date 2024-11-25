@@ -15,7 +15,7 @@ const CourseDetails = () => {
         const fetchCourse = async () => {
             try {
                 const response = await api.get(`/courses/single/${courseId}`);
-                
+
                 setCourse(response.data.course);
 
                 const savedProgress = localStorage.getItem(`course-${courseId}-video-progress`);
@@ -33,11 +33,26 @@ const CourseDetails = () => {
     const handleVideoProgress = (e) => {
         const video = e.target;
         const progress = Math.floor((video.currentTime / video.duration) * 100);
+        const currentTime = video.currentTime;
 
         setVideoProgress(progress);
 
         localStorage.setItem(`course-${courseId}-video-progress`, JSON.stringify(progress));
-        localStorage.setItem(`course-${courseId}-video-current-time`, video.currentTime);
+        localStorage.setItem(`course-${courseId}-video-current-time`, currentTime);
+    };
+
+    const handleVideoPause = async () => {
+        const progress = videoProgress;
+        const currentTime = videoRef.current?.currentTime;
+
+        try {
+            await api.patch(`/courses/${courseId}/progress`, {
+                videoProgress: progress,
+                currentTime,
+            });
+        } catch (error) {
+            console.error("Error updating progress", error);
+        }
     };
 
     const handleStartVideo = () => {
@@ -58,7 +73,32 @@ const CourseDetails = () => {
         }));
     };
 
-    if (!course) return <p>Loading course details...</p>;
+    useEffect(() => {
+        const saveProgressOnUnload = async () => {
+            try {
+                const progress = videoProgress;
+                const currentTime = videoRef.current?.currentTime;
+
+                await api.patch(`/courses/${courseId}/progress`, {
+                    videoProgress: progress,
+                    currentTime,
+                });
+            } catch (error) {
+                console.error("Error saving progress on unload", error);
+            }
+        };
+
+        window.addEventListener("beforeunload", saveProgressOnUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", saveProgressOnUnload);
+            saveProgressOnUnload();
+        };
+    }, [courseId, videoProgress]); // Ensure this effect is run whenever videoProgress or courseId changes
+
+    if (!course) {
+        return <p>Loading course details...</p>;
+    }
 
     return (
         <Container className="mt-4">
@@ -84,12 +124,10 @@ const CourseDetails = () => {
                                     width="100%"
                                     onTimeUpdate={handleVideoProgress}
                                     onLoadedMetadata={handleLoadedMetadata}
-                                    style={{ marginTop: '25px' }}
+                                    onPause={handleVideoPause}
+                                    style={{ marginTop: "25px" }}
                                 >
-                                    <source
-                                        src={process.env.REACT_APP_BASE_URL + course.videoUrl}
-                                        type="video/mp4"
-                                    />
+                                    <source src={process.env.REACT_APP_BASE_URL + course.videoUrl} type="video/mp4" />
                                     Your browser does not support the video tag.
                                 </video>
                             )}

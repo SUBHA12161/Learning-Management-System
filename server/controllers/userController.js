@@ -85,7 +85,7 @@ const googleLogin = async (req, res) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            user = await User.create({ name, email, googleId, password: null });
+            user = await User.create({ name, email, googleId, password: null, isGoogleAccount: true });
         } else if (!user.googleId) {
             user.googleId = googleId;
             await user.save();

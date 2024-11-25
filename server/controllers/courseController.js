@@ -1,8 +1,9 @@
 const Course = require("../models/Course");
+const mongoose = require("mongoose");
 
 const createCourse = async (req, res) => {
     try {
-        const { title, description, price, category } = req.body;
+        const { title, description, price, category, outline } = req.body;
 
         if (!title || !description || !price || !category) {
             return res.status(400).json({ message: "All fields are required." });
@@ -11,6 +12,8 @@ const createCourse = async (req, res) => {
         const image = req.files?.image ? `/uploads/${req.files.image[0].filename}` : null;
         const videoUrl = req.files?.video ? `/uploads/${req.files.video[0].filename}` : null;
 
+        const parsedOutline = outline ? JSON.parse(outline) : [];
+
         const course = await Course.create({
             title,
             description,
@@ -18,6 +21,7 @@ const createCourse = async (req, res) => {
             category,
             image,
             videoUrl,
+            outline: parsedOutline,
             instructor: req.user.id,
         });
 

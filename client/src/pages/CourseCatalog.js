@@ -18,13 +18,16 @@ const CourseCatalog = () => {
                     params: {
                         page,
                         limit,
-                        ...filters
-                    }
+                        ...filters,
+                    },
                 });
-                if (response.data.length === 0) {
+
+                const { courses } = response.data;
+
+                if (courses.length === 0) {
                     setHasMore(false);
                 } else {
-                    setCourses((prevCourses) => [...prevCourses, ...response.data]);
+                    setCourses((prevCourses) => [...prevCourses, ...courses]);
                 }
             } catch (error) {
                 console.error("Error fetching courses", error);

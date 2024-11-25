@@ -9,6 +9,9 @@ const CreateCourse = () => {
     const [category, setCategory] = useState("");
     const [image, setImage] = useState(null);
     const [video, setVideo] = useState(null);
+    const [outline, setOutline] = useState([]);
+    const [lessonTitle, setLessonTitle] = useState("");
+    const [lessonDescription, setLessonDescription] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -24,12 +27,17 @@ const CreateCourse = () => {
         "Web Development",
     ];
 
-    const handleImageChange = (e) => {
-        setImage(e.target.files[0]);
-    };
+    const handleImageChange = (e) => setImage(e.target.files[0]);
+    const handleVideoChange = (e) => setVideo(e.target.files[0]);
 
-    const handleVideoChange = (e) => {
-        setVideo(e.target.files[0]);
+    const addLessonToOutline = () => {
+        if (lessonTitle && lessonDescription) {
+            setOutline([...outline, { title: lessonTitle, description: lessonDescription }]);
+            setLessonTitle("");
+            setLessonDescription("");
+        } else {
+            setErrorMessage("Both lesson title and description are required.");
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -43,6 +51,7 @@ const CreateCourse = () => {
             formData.append("description", description);
             formData.append("price", price);
             formData.append("category", category);
+            formData.append("outline", JSON.stringify(outline));
             if (image) formData.append("image", image);
             if (video) formData.append("video", video);
 
@@ -55,10 +64,10 @@ const CreateCourse = () => {
             setDescription("");
             setPrice("");
             setCategory("");
+            setOutline([]);
             setImage(null);
             setVideo(null);
 
-            // Reset the file input fields
             document.getElementById("image").value = "";
             document.getElementById("video").value = "";
         } catch (err) {
@@ -126,23 +135,47 @@ const CreateCourse = () => {
                 </FormGroup>
                 <FormGroup>
                     <Label for="image">Course Image</Label>
-                    <Input
-                        type="file"
-                        id="image"
-                        onChange={handleImageChange}
-                        accept="image/*"
-                    />
+                    <Input type="file" id="image" onChange={handleImageChange} accept="image/*" />
                 </FormGroup>
                 <FormGroup>
                     <Label for="video">Course Video</Label>
+                    <Input type="file" id="video" onChange={handleVideoChange} accept="video/*" />
+                </FormGroup>
+
+                {/* Outline Section */}
+                <h4>Add Course Outline</h4>
+                <FormGroup>
+                    <Label for="lessonTitle">Lesson Title</Label>
                     <Input
-                        type="file"
-                        id="video"
-                        onChange={handleVideoChange}
-                        accept="video/*"
+                        type="text"
+                        id="lessonTitle"
+                        placeholder="Enter lesson title"
+                        value={lessonTitle}
+                        onChange={(e) => setLessonTitle(e.target.value)}
                     />
                 </FormGroup>
-                <Button color="primary" type="submit">
+                <FormGroup>
+                    <Label for="lessonDescription">Lesson Description</Label>
+                    <Input
+                        type="textarea"
+                        id="lessonDescription"
+                        placeholder="Enter lesson description"
+                        value={lessonDescription}
+                        onChange={(e) => setLessonDescription(e.target.value)}
+                    />
+                </FormGroup>
+                <Button color="secondary" onClick={addLessonToOutline}>
+                    Add Lesson
+                </Button>
+                <ul>
+                    {outline.map((lesson, index) => (
+                        <li key={index}>
+                            <strong>{lesson.title}:</strong> {lesson.description}
+                        </li>
+                    ))}
+                </ul>
+
+                <Button color="primary" type="submit" className="mt-3">
                     Create Course
                 </Button>
             </Form>

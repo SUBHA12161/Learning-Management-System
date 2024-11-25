@@ -15,7 +15,8 @@ const CourseDetails = () => {
         const fetchCourse = async () => {
             try {
                 const response = await api.get(`/courses/single/${courseId}`);
-                setCourse(response.data);
+                
+                setCourse(response.data.course);
 
                 const savedProgress = localStorage.getItem(`course-${courseId}-video-progress`);
                 if (savedProgress) {
@@ -126,7 +127,6 @@ const CourseDetails = () => {
                                         <Card className="mt-2">
                                             <CardBody>
                                                 <p>{lesson.description}</p>
-                                                <p><strong>Duration:</strong> {lesson.duration} minutes</p>
                                             </CardBody>
                                         </Card>
                                     </Collapse>
